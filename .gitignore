@@ -1,2 +1,6 @@
 *.o
 /.idea
+/przyk*
+przyk*
+dcl
+_*
