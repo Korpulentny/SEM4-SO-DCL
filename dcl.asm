@@ -15,6 +15,13 @@ section .data
 
 section .bss
 
+  permL resb 42
+  permR resb 42
+  permT resb 42
+  permLT resb 42
+  permRT resb 42
+  permTT resb 42
+
 section .text
 
 _exit1:
@@ -26,35 +33,54 @@ _checkPermutation:
   mov al, [rdx + ALPHABET_SIZE]
   cmp al, 0
   jne _exit1
-  mov rcx, 0
 
+  xor rcx, rcx
+;bez duplikatow pierwszego elelmetnu
 _checkCharLoop:
-  checkChar [rdx + rcx]
-  inc rcx
-  mov al, [rdx + rcx]
+  checkChar BYTE [rdx + rcx]
+  mov al, BYTE [rdx + rcx]
+  sub al, 49
+
+  mov [r8 + rcx], al
+  cmp BYTE [r9 + rax], 0
+  jne _exit1
+  mov [r9 + rax], cl
+
+  inc cl
+  mov al, BYTE [rdx + rcx]
   cmp al, 0
+
   jne _checkCharLoop
+  cmp cl, ALPHABET_SIZE
+  jne _exit1
   ret
 
 
   global _start
 
 _start:
-  mov rcx, [rsp]
-  cmp rcx, 5
+  cmp QWORD [rsp], 5                  ;sprawdzamy czy otrzymaliśmy poprawną liczbę argumentów
   jne _exit1
+  xor rax, rax
   mov rdx, [rsp + 16]
+  mov r8, permL
+  mov r9, permLT
   call _checkPermutation
   mov rdx, [rsp + 24]
+  mov r8, permR
+  mov r9, permRT
   call _checkPermutation
   mov rdx, [rsp + 32]
+  mov r8, permT
+  mov r9, permTT
   call _checkPermutation
 
   mov rdx, [rsp + 40]
   mov al, [rdx + 2]
   cmp al, 0
   jne _exit1
-
+  checkChar [rdx]
+  checkChar[rdx+1]
 
   mov rax, SYS_EXIT
   mov rdi, 0
