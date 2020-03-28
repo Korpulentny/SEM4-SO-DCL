@@ -24,24 +24,29 @@ section .bss
 
 section .text
 
+
 _exit1:
   mov rax, SYS_EXIT
   mov rdi, 1
   syscall
 
 _checkPermutation:
-  mov al, [rdx + ALPHABET_SIZE]
+  mov al, BYTE [rdx + ALPHABET_SIZE]
   cmp al, 0
   jne _exit1
 
   xor rcx, rcx
+
 ;bez duplikatow pierwszego elelmetnu
 _checkCharLoop:
   checkChar BYTE [rdx + rcx]
   mov al, BYTE [rdx + rcx]
   sub al, 49
-
-  mov [r8 + rcx], al
+  cmp al, 0
+  jne _notIncrementing
+  inc r10
+_notIncrementing:
+  mov BYTE [r8 + rcx], al
   cmp BYTE [r9 + rax], 0
   jne _exit1
   mov [r9 + rax], cl
@@ -61,26 +66,29 @@ _checkCharLoop:
 _start:
   cmp QWORD [rsp], 5                  ;sprawdzamy czy otrzymaliśmy poprawną liczbę argumentów
   jne _exit1
+  xor r10, r10
   xor rax, rax
-  mov rdx, [rsp + 16]
+  mov rdx, QWORD [rsp + 16]
   mov r8, permL
   mov r9, permLT
   call _checkPermutation
-  mov rdx, [rsp + 24]
+  mov rdx, QWORD [rsp + 24]
   mov r8, permR
   mov r9, permRT
   call _checkPermutation
-  mov rdx, [rsp + 32]
+  mov rdx, QWORD [rsp + 32]
   mov r8, permT
   mov r9, permTT
   call _checkPermutation
 
-  mov rdx, [rsp + 40]
-  mov al, [rdx + 2]
+  mov rdx, QWORD [rsp + 40]
+  mov al, BYTE [rdx + 2]
   cmp al, 0
   jne _exit1
-  checkChar [rdx]
-  checkChar[rdx+1]
+  cmp r10, 3
+  jne _exit1
+  checkChar BYTE [rdx]
+  checkChar BYTE [rdx+1]
 
   mov rax, SYS_EXIT
   mov rdi, 0
