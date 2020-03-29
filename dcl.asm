@@ -120,54 +120,46 @@ _beginCypher:
   sub         r8b, 49
 
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, r13b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permR + r8]
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, r13b
-  mov         r8b, BYTE [identity + rax]
-
-
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
   add         al, r12b
+
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permL + r8]
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, r12b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permT + r8]
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, r12b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permLT + r8]
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, r12b
-  mov         r8b, BYTE [identity + rax]
-
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
   add         al, r13b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permRT + r8]
 
-  mov         eax, ALPHABET_SIZE
-  add         eax, r8d
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, r13b
   mov         r8b, BYTE [identity + rax]
 
