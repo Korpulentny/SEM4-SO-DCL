@@ -78,7 +78,6 @@ _start:
 
   xor         r10, r10
   mov         r10b, BYTE [rdx]
-
   mov         BYTE [leftKey], r10b
 
   mov         r10b, BYTE [rdx + 1]
@@ -159,54 +158,54 @@ _beginCypher:
   sub         r8b, 49
 
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, BYTE [rightKey]
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permR + r8]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, BYTE [rightKey]
   mov         r8b, BYTE [identity + rax]
 
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, BYTE [leftKey]
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permL + r8]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, BYTE [leftKey]
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permT + r8]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, BYTE [leftKey]
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permLT + r8]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, BYTE [leftKey]
   mov         r8b, BYTE [identity + rax]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   add         al, BYTE [rightKey]
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permRT + r8]
 
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
+  mov         al, ALPHABET_SIZE
+  add         al, r8b
   sub         al, BYTE [rightKey]
   mov         r8b, BYTE [identity + rax]
 
@@ -278,4 +277,4 @@ _exit1:
   syscall
 
 ;./dcl 'G=EN9LFW;VBMHA7:ZTY8K@QI6X>OJ2PR?4DSCU1<53' '4O8?T3FBKX7=G96;ZPQUDCJV:>LEY1HRS5@<MNWA2I' 'XSNEG9;J6Z7B>=CPD<?A4Q5KY8HTO3M@FV2LWRU1I:' 'P='
-;9=O4M9YS<:4SJ2NS3BHTWLZOA
+;9=O4M9YS<:4SJ2NS3BHTWLZOA=A9I?Z6TG>FA@S4YN9=C=4PWW
