@@ -12,11 +12,19 @@ ROTOR_POSITION_3 equ 35
 
 section .data
 
-%macro checkChar 1                  ;sprawdzamy czy argument jest pomiędzy '1' a 'Z' w ascii
-  cmp         %1, 49
+%macro checkChar 1                  ;sprawdzamy czy argument jest pomiędzy 1 a Z w ascii
+  mov         al, %1
+  cmp         al, 49
   jl          _exit1
   cmp         al, 90
   jg          _exit1
+%endmacro
+
+
+%macro exit 1
+  mov         rax, SYS_EXIT
+  mov         rdi, %1
+  syscall     
 %endmacro
 
 section .bss
@@ -26,7 +34,7 @@ permR resb ALPHABET_SIZE
 permT resb ALPHABET_SIZE
 permLT resb ALPHABET_SIZE
 permRT resb ALPHABET_SIZE
-inputBuffer resb INPUT_BUFFER_SIZE
+  inputBuffer resb INPUT_BUFFER_SIZE
 identity resb ALPHABET_SIZE*3
 
 section .text
@@ -64,7 +72,6 @@ _start:
   xor         r10d, r10d
   mov         r12b, BYTE [rdx]
   mov         r13b, BYTE [rdx + 1]
-
   sub         r12b, 49
   sub         r13b, 49
   xor         rcx, rcx
@@ -78,12 +85,29 @@ _fillIdentityLoop:
 
   jne         _fillIdentityLoop
 
+
+
+
+
+
+
+
+
+; 1.Wczytuje na bufor i sprawdzam czy rax!=0 bo jak nie jest różny to exit
+; 2.Mam jakis counter ktory zwiekszam z każdą literką
+; 3.Wczytuje literkę, sprawdzam czy jest z dopuszczalnego przedzialu, bo jak nie to elo nara exit
+; 4.Jak jest z dopuszczalnego przedzialu to super pusczam na niej szyfrowanie, zaszfrowaną literką nadpisuje pierwotną w buforze
+; 5.inkrementuje counter, sprawdzam czy przeorałem już tyle literek co wczytałem bajtów, jesli nie to ide do 3.
+; 6.jesli przeorałem już wszystkie literki to wypisuje bufor i moge cofnąć się do punktu 1.
+
+
+
 _readInput:
   mov         rax, SYS_READ
   mov         rdi, STDIN
   mov         rsi, inputBuffer
   mov         rdx, INPUT_BUFFER_SIZE
-  syscall
+  syscall     
   cmp         rax, 0                ;jeśli nie wczytaliśmy nic, to kończymy
   je          _exit0
   mov         r9, rax               ;r9 będzie przechowywało liczbę ostatnio wczytanych znaków
@@ -94,7 +118,7 @@ _processInputCharLoop:
 
   cmp         r13b, ALPHABET_SIZE
   jne         _checkRotorPositions
-  xor         r11b, r11b
+  xor         r11, r11
   mov         r13b, r11b
   jmp         _beginCypher
 _checkRotorPositions:
@@ -111,7 +135,7 @@ _incrementingLeft:
   inc         r12b
   cmp         r12b, ALPHABET_SIZE
   jne         _beginCypher
-  xor         r11b, r11b
+  xor         r11, r11
   mov         r12b, r11b
 _beginCypher:
 
@@ -182,14 +206,14 @@ _beginCypher:
   mov         rdi, STDOUT
   mov         rsi, inputBuffer
   mov         rdx, r9
-  syscall
+  syscall     
 
   jmp         _readInput
 
 _exit0:
   mov         rax, SYS_EXIT
   mov         rdi, 0
-  syscall
+  syscall     
 
 _checkPermutation:
   mov         al, BYTE [rdx + ALPHABET_SIZE]
@@ -231,10 +255,10 @@ _checkAllPermutations:
   jne         _checkCharLoop
   cmp         cl, ALPHABET_SIZE
   jne         _exit1
-  ret
+  ret         
 
 _exit1:
   mov         rax, SYS_EXIT
   mov         rdi, 1
-  syscall
+  syscall     
 
