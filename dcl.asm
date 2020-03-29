@@ -41,41 +41,37 @@ section .bss
 
 section .text
 
-
-
-
   global _start
 
 _start:
   cmp QWORD [rsp], 5                  ;sprawdzamy czy otrzymaliśmy poprawną liczbę argumentów
   jne _exit1
-  xor r10, r10                        ;na r10 trzymamy wystąpienia znaku '1' w permutacjach
+  xor r10d, r10d                        ;na r10 trzymamy wystąpienia znaku '1' w permutacjach
   xor rax, rax                        ;zerujemy rax, gdyż będziemy chcieli kiedyś dodawać wartość w al do większego rejestru
 
   mov rdx, QWORD [rsp + 16]
   mov r8, permL
   mov r9, permLT
-  add r10, 10
+  add r10d, 10
   call _checkPermutation              ;Sprawdzam czy pierwszy argument to permutacja dopszuczalnych znaków
   mov rdx, QWORD [rsp + 24]
   mov r8, permR
   mov r9, permRT
-  add r10, 10
+  add r10d, 10
   call _checkPermutation              ;Sprawdzam czy drugi argument to permutacja dopszuczalnych znaków
   mov rdx, QWORD [rsp + 32]
   mov r8, permT
-  add r10, 10
+  add r10d, 10
   call _checkPermutation              ;Sprawdzam czy trzeci to zlozenie 21 cykli dlugosci 2
-
   mov rdx, QWORD [rsp + 40]            ;sprawdzamy czy ostatni argument sklada się z dwóch dopuszczalnych znaków
   mov al, BYTE [rdx + 2]
   cmp al, 0
   jne _exit1
-  cmp r10, 33                           ;sprawdzamy czy '1' wystąpiło w każdej permutacji dokładnie raz
+  cmp r10d, 33                           ;sprawdzamy czy '1' wystąpiło w każdej permutacji dokładnie raz
   jne _exit1
   checkChar BYTE [rdx]
   checkChar BYTE [rdx + 1]
-  xor r10, r10
+  xor r10d, r10d
   mov r10b, BYTE [rdx]
   mov BYTE [leftKey], r10b
   mov r10b, BYTE [rdx + 1]
@@ -119,12 +115,9 @@ _readInput:
   cmp rax, 0                           ;jeśli nie wczytaliśmy nic, to kończymy
   je _exit0
   mov r9, rax                         ;r9 będzie przechowywało liczbę ostatnio wczytanych znaków
-;  dec r9
-  xor rcx, rcx                         ;przygotowuję rcx pod licznik wczytanych znaków
+  xor rax, rax                         ;przygotowuję rcx pod licznik wczytanych znaków
 _processInputCharLoop:
   checkChar BYTE [inputBuffer + rcx]
-  ;tutaj wleci szyfrowanko pyk pyk bedzie super, nie wiem jak to zrobic
-
   inc BYTE [rightKey]
 
   cmp BYTE [rightKey], ALPHABET_SIZE
@@ -154,54 +147,54 @@ _beginCypher:
   sub r8b, 49
 
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   add al, BYTE [rightKey]
   mov r8b, BYTE [identity + rax]
 
   mov r8b, BYTE [permR + r8]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   sub al, BYTE [rightKey]
   mov r8b, BYTE [identity + rax]
 
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   add al, BYTE [leftKey]
   mov r8b, BYTE [identity + rax]
 
   mov r8b, BYTE [permL + r8]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   sub al, BYTE [leftKey]
   mov r8b, BYTE [identity + rax]
 
   mov r8b, BYTE [permT + r8]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   add al, BYTE [leftKey]
   mov r8b, BYTE [identity + rax]
 
   mov r8b, BYTE [permLT + r8]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   sub al, BYTE [leftKey]
   mov r8b, BYTE [identity + rax]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   add al, BYTE [rightKey]
   mov r8b, BYTE [identity + rax]
 
   mov r8b, BYTE [permRT + r8]
 
-  mov rax, ALPHABET_SIZE
-  add rax, r8
+  mov eax, ALPHABET_SIZE
+  add eax, r8d
   sub al, BYTE [rightKey]
   mov r8b, BYTE [identity + rax]
 
@@ -250,11 +243,11 @@ _checkCharLoop:
   sub al, 49
   cmp al, 0
   jne _notIncrementing
-  inc r10
+  inc r10d
 
 _notIncrementing:
   mov BYTE [r8 + rcx], al
-  cmp r10, 30                           ;poprawic na nie magic number
+  cmp r10d, 30                           ;poprawic na nie magic number
   jg _checkPermutationT
   cmp BYTE [r9 + rax], 0               ;jesli juz wystąpił ten znak, to znaczy, że to ciąg nie jest permutacją
   jne _exit1
@@ -279,23 +272,9 @@ _checkAllPermutations:
   jne _exit1
   ret
 
-
-
-
 _exit1:
   mov rax, SYS_EXIT
   mov rdi, 1
-  syscall
-
-_exit2:
-  xor rcx, rcx
-  mov cl, BYTE [rdx + rax]
-;  mov rcx, rax
-  exit rcx
-
-_exit3:
-  mov rax, SYS_EXIT
-  mov rdi, 3
   syscall
 
 
