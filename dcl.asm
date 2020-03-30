@@ -76,15 +76,13 @@ _start:
   checkChar   BYTE [rdx]
   checkChar   BYTE [rdx + 1]
 
-  xor         r10, r10
-  mov         r10b, BYTE [rdx]
-  mov         BYTE [leftKey], r10b
+  xor         r12, r12
+  xor         r13, r13
 
-  mov         r10b, BYTE [rdx + 1]
-
-  mov         BYTE [rightKey], r10b
-  sub         BYTE [leftKey], 49
-  sub         BYTE [rightKey], 49
+  mov         r12b, BYTE [rdx]
+  mov         r13b, BYTE [rdx + 1]
+  sub         r12b, 49
+  sub         r13b, 49
 
   xor         rcx, rcx
 
@@ -94,25 +92,7 @@ _fillIdentityLoop:
   mov         BYTE [identity + 2 * ALPHABET_SIZE + rcx], cl
   inc         cl
   cmp         rcx, ALPHABET_SIZE
-
   jne         _fillIdentityLoop
-
-
-
-
-
-
-
-
-
-; 1.Wczytuje na bufor i sprawdzam czy rax!=0 bo jak nie jest różny to exit
-; 2.Mam jakis counter ktory zwiekszam z każdą literką
-; 3.Wczytuje literkę, sprawdzam czy jest z dopuszczalnego przedzialu, bo jak nie to elo nara exit
-; 4.Jak jest z dopuszczalnego przedzialu to super pusczam na niej szyfrowanie, zaszfrowaną literką nadpisuje pierwotną w buforze
-; 5.inkrementuje counter, sprawdzam czy przeorałem już tyle literek co wczytałem bajtów, jesli nie to ide do 3.
-; 6.jesli przeorałem już wszystkie literki to wypisuje bufor i moge cofnąć się do punktu 1.
-
-
 
 _readInput:
   mov         rax, SYS_READ
@@ -123,34 +103,36 @@ _readInput:
   cmp         rax, 0                ;jeśli nie wczytaliśmy nic, to kończymy
   je          _exit0
   mov         r9, rax               ;r9 będzie przechowywało liczbę ostatnio wczytanych znaków
-; dec r9
   xor         rcx, rcx              ;przygotowuję rcx pod licznik wczytanych znaków
 _processInputCharLoop:
   checkChar   BYTE [inputBuffer + rcx]
-;tutaj wleci szyfrowanko pyk pyk bedzie super, nie wiem jak to zrobic
 
-  inc         BYTE [rightKey]
+  inc         r13b
+  cmp         r13b, ALPHABET_SIZE
 
-  cmp         BYTE [rightKey], ALPHABET_SIZE
   jne         _checkRotorPositions
-  xor         r11, r11
-  mov         BYTE [rightKey], r11b
+
+  xor         r13b, r13b
+
   jmp         _beginCypher
 _checkRotorPositions:
-  cmp         BYTE [rightKey], ROTOR_POSITION_1
+  cmp         r13b, ROTOR_POSITION_1
+
   je          _incrementingLeft
-  cmp         BYTE [rightKey], ROTOR_POSITION_2
+  cmp         r13b, ROTOR_POSITION_2
   je          _incrementingLeft
-  cmp         BYTE [rightKey], ROTOR_POSITION_3
+  cmp         r13b, ROTOR_POSITION_3
   je          _incrementingLeft
 
   jmp         _beginCypher
 _incrementingLeft:
-  inc         BYTE [leftKey]
-  cmp         BYTE [leftKey], ALPHABET_SIZE
+  inc         r12b
+  cmp         r12b, ALPHABET_SIZE
+
   jne         _beginCypher
-  xor         r11, r11
-  mov         BYTE [leftKey], r11b
+  xor         r12b, r12b
+
+
 _beginCypher:
 
   xor         r8, r8
@@ -158,55 +140,55 @@ _beginCypher:
   sub         r8b, 49
 
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  add         al, BYTE [rightKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  add         al, r13b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permR + r8]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  sub         al, BYTE [rightKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  sub         al, r13b
   mov         r8b, BYTE [identity + rax]
 
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  add         al, BYTE [leftKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  add         al, r12b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permL + r8]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  sub         al, BYTE [leftKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  sub         al, r12b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permT + r8]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  add         al, BYTE [leftKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  add         al, r12b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permLT + r8]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  sub         al, BYTE [leftKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  sub         al, r12b
   mov         r8b, BYTE [identity + rax]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  add         al, BYTE [rightKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  add         al, r13b
   mov         r8b, BYTE [identity + rax]
 
   mov         r8b, BYTE [permRT + r8]
 
-  mov         al, ALPHABET_SIZE
-  add         al, r8b
-  sub         al, BYTE [rightKey]
+  mov         rax, ALPHABET_SIZE
+  add         rax, r8
+  sub         al, r13b
   mov         r8b, BYTE [identity + rax]
 
   add         r8b, 49
