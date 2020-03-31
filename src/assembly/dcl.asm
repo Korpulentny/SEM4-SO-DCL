@@ -20,13 +20,6 @@ section .data
   jg          _exit1
 %endmacro
 
-
-%macro exit 1
-  mov         rax, SYS_EXIT
-  mov         rdi, %1
-  syscall
-%endmacro
-
 section .bss
 
 permL resb ALPHABET_SIZE
@@ -41,57 +34,57 @@ rightKey resb 1
 
 section .text
 
-
-
-
 global _start
 
 _start:
   cmp         QWORD [rsp], 5        ;sprawdzamy czy otrzymaliśmy poprawną liczbę argumentów
   jne         _exit1
-  xor         r10d, r10d            ;na r10 trzymamy wystąpienia znaku '1' w permutacjach
+  xor         r10d, r10d            ;na r10 trzymamy liczbę wystąpienia znaku '1' w permutacjach
   xor         eax, eax              ;zerujemy rax, gdyż będziemy chcieli kiedyś dodawać wartość w al do większego rejestru
 
   mov         rdx, QWORD [rsp + 16]
   mov         r8, permL
   mov         r9, permLT
-  add         r10d, 10
-  call        _checkPermutation     ;Sprawdzam czy pierwszy argument to permutacja dopszuczalnych znaków
+  add         r10d, 10              ;Zwiększenie r10 o 10 sygnalizuje rozpoczęcie sprawdzania następnej permutacji
+
+  call        _checkPermutation     ;Sprawdzam czy pierwszy argument to permutacja dopuszczalnych znaków
   mov         rdx, QWORD [rsp + 24]
   mov         r8, permR
   mov         r9, permRT
-  add         r10d, 10
-  call        _checkPermutation     ;Sprawdzam czy drugi argument to permutacja dopszuczalnych znaków
+  add         r10d, 10              ;Sygnalizujemy sprawdzanie następnej permutacji
+  call        _checkPermutation     ;Sprawdzam czy drugi argument to permutacja dopuszczalnych znaków
+
   mov         rdx, QWORD [rsp + 32]
   mov         r8, permT
-  add         r10d, 10
-  call        _checkPermutation     ;Sprawdzam czy trzeci to zlozenie 21 cykli dlugosci 2
-  mov         rdx, QWORD [rsp + 40] ;sprawdzamy czy ostatni argument sklada się z dwóch dopuszczalnych znaków
-  mov         al, BYTE [rdx + 2]
-  cmp         al, 0
-  jne         _exit1
-  cmp         r10d, 33              ;sprawdzamy czy '1' wystąpiło w każdej permutacji dokładnie raz
+  add         r10d, 10              ;Wiemy, że r10 jest już większe niż 30, więc musimy sprawdzić warunek na T
+  call        _checkPermutation     ;Sprawdzam czy trzeci to zlożenie 21 cykli dlugości 2
+
+  mov         rdx, QWORD [rsp + 40] ;Sprawdzam czy ostatni argument sklada się z dwóch dopuszczalnych znaków
+  cmp         BYTE [rdx +2], 0      ;Sprawdzam czy klucz jest nie dłuższy niż 2 znaki
   jne         _exit1
 
-  checkChar   BYTE [rdx]
-  checkChar   BYTE [rdx + 1]
+  cmp         r10d, 33              ;Sprawdzam czy '1' wystąpiło w każdej permutacji dokładnie raz
+  jne         _exit1
 
-  xor         r12, r12
-  xor         r13, r13
+  xor         r12, r12              ;Zeruję r12 pod przechowywanie klucza
+  xor         r13, r13              ;Zeruję r13 pod przechowywanie klucza
+  mov         r12b, BYTE [rdx]      ;Zapisuję klucz l fo r12
+  mov         r13b, BYTE [rdx + 1]  ;Zapisuję klucz r do r13
+  checkChar   r12b
+  checkChar   r13b
+  sub         r12b, 49              ;Chcę przechowywać przesunięcie a nie znak
+  sub         r13b, 49              ;Chcę przechowywać przesunięcie a nie znak
 
-  mov         r12b, BYTE [rdx]
-  mov         r13b, BYTE [rdx + 1]
-  sub         r12b, 49
-  sub         r13b, 49
-
-  xor         rcx, rcx
+  xor         r14, r14              ;Będzie to rejestr pomocniczy jako 0 przy cmov
+  mov         r15, identity         ;Uzupełnimy identity potrojonym alfabetem
+  xor         rcx, rcx              ;Zerujemy iterator do fillIdentityLoop
 
 _fillIdentityLoop:
-  mov         BYTE [identity + rcx], cl
-  mov         BYTE [identity + ALPHABET_SIZE + rcx], cl
-  mov         BYTE [identity + 2 * ALPHABET_SIZE + rcx], cl
-  inc         cl
-  cmp         rcx, ALPHABET_SIZE
+  mov         BYTE [r15 + rcx], cl
+  mov         BYTE [r15 + ALPHABET_SIZE + rcx], cl
+  mov         BYTE [r15 + 2 * ALPHABET_SIZE + rcx], cl
+  inc         ecx
+  cmp         ecx, ALPHABET_SIZE
   jne         _fillIdentityLoop
 
 _readInput:
@@ -100,102 +93,95 @@ _readInput:
   mov         rsi, inputBuffer
   mov         rdx, INPUT_BUFFER_SIZE
   syscall
-  cmp         rax, 0                ;jeśli nie wczytaliśmy nic, to kończymy
+  cmp         rax, 0                ;Jeśli nie wczytaliśmy nic, to kończymy
+  jl          _exit1
   je          _exit0
   mov         r9, rax               ;r9 będzie przechowywało liczbę ostatnio wczytanych znaków
-  xor         rcx, rcx              ;przygotowuję rcx pod licznik wczytanych znaków
+  xor         rcx, rcx              ;przygotowuję rcx pod licznik iterator po wczytanych znakach
+
 _processInputCharLoop:
   checkChar   BYTE [inputBuffer + rcx]
-
   inc         r13b
-  cmp         r13b, ALPHABET_SIZE
-
+  cmp         r13b, ALPHABET_SIZE   ;Cykliczne przesunięcie Z -> 1 gdy bębenek R osiągnie pozycję 'Z'
   jne         _checkRotorPositions
-
   xor         r13b, r13b
-
   jmp         _beginCypher
+
 _checkRotorPositions:
   cmp         r13b, ROTOR_POSITION_1
-
   je          _incrementingLeft
   cmp         r13b, ROTOR_POSITION_2
   je          _incrementingLeft
   cmp         r13b, ROTOR_POSITION_3
   je          _incrementingLeft
-
   jmp         _beginCypher
+
 _incrementingLeft:
   inc         r12b
-  cmp         r12b, ALPHABET_SIZE
-
-  jne         _beginCypher
-  xor         r12b, r12b
-
+  cmp         r12b, ALPHABET_SIZE   ;Cykliczne przesunięcie Z -> 1 gdy bębenek L osiągnie pozycję 'Z'
+  cmove       r12d, r14d
 
 _beginCypher:
-
-  xor         r8, r8
+  xor         r8, r8                ;W r8 będzie przechowywana aktualna wartość zmienianego znaku
   mov         r8b, BYTE [inputBuffer + rcx]
   sub         r8b, 49
 
+  mov         rax, ALPHABET_SIZE    ;Zaczynamy od środkowej kopii alfabetu
+  add         rax, r8               ;Znajdujemy pozycję pierwotną
+  add         al, r13b              ;Dokonujemy cyklicznego przesunięcia w prawo o pozycję bębenka R
+  mov         r8b, BYTE [r15 + rax] ;Nadpisujemy aktualny znak przesuniętym cyklicznie
+
+  mov         r8b, BYTE [permR + r8];Nakładamy na nasz znak permutację R
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
-  add         al, r13b
-  mov         r8b, BYTE [identity + rax]
-
-  mov         r8b, BYTE [permR + r8]
-
-  mov         rax, ALPHABET_SIZE
-  add         rax, r8
-  sub         al, r13b
-  mov         r8b, BYTE [identity + rax]
+  sub         al, r13b              ;Dokonujemy cyklicznego przesunięcia w lewo o pozycję bębenka R
+  mov         r8b, BYTE [r15 + rax]
 
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
-  add         al, r12b
-  mov         r8b, BYTE [identity + rax]
+  add         al, r12b              ;Dokonujemy cyklicznego przesunięcia w prawo o pozycję bębenka L
+  mov         r8b, BYTE [r15 + rax]
 
   mov         r8b, BYTE [permL + r8]
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
-  sub         al, r12b
-  mov         r8b, BYTE [identity + rax]
+  sub         al, r12b              ;Dokonujemy cyklicznego przesunięcia w lewo o pozycję bębenka L
+  mov         r8b, BYTE [r15 + rax]
 
   mov         r8b, BYTE [permT + r8]
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
   add         al, r12b
-  mov         r8b, BYTE [identity + rax]
+  mov         r8b, BYTE [r15 + rax]
 
   mov         r8b, BYTE [permLT + r8]
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
   sub         al, r12b
-  mov         r8b, BYTE [identity + rax]
+  mov         r8b, BYTE [r15 + rax]
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
   add         al, r13b
-  mov         r8b, BYTE [identity + rax]
+  mov         r8b, BYTE [r15 + rax]
 
   mov         r8b, BYTE [permRT + r8]
 
   mov         rax, ALPHABET_SIZE
   add         rax, r8
   sub         al, r13b
-  mov         r8b, BYTE [identity + rax]
+  mov         r8b, BYTE [r15 + rax]
 
   add         r8b, 49
   mov         BYTE [inputBuffer + rcx], r8b
 
-  inc         rcx
-  cmp         rcx, r9
+  inc         ecx
+  cmp         ecx, r9d
   jne         _processInputCharLoop
 
   mov         rax, SYS_WRITE
@@ -203,6 +189,8 @@ _beginCypher:
   mov         rsi, inputBuffer
   mov         rdx, r9
   syscall
+  cmp         rax, 0
+  jl          _exit1
 
   jmp         _readInput
 
@@ -213,50 +201,44 @@ _exit0:
 
 _checkPermutation:
   mov         al, BYTE [rdx + ALPHABET_SIZE]
-  cmp         al, 0
+  cmp         al, 0                 ;Sprawdzamy czy argument jest nie dłuższy niż alfabet
   jne         _exit1
-
   xor         ecx, ecx
 
 _checkCharLoop:
-  checkChar   BYTE [rdx + rcx]
-  mov         al, BYTE [rdx + rcx]
+  checkChar   BYTE [rdx + rcx]      ;Sprawdzamy poprawność znaku
   sub         al, 49
-  cmp         al, 0
-  jne         _notIncrementing
+  cmp         al, 0                 ;Sprawdzamy, czy obsługiwany znak to '1'
+  jne         _notIncrementing      ;Jeśli nie to nie zwiększamy licznika znaków '1' - r10
   inc         r10d
 
 _notIncrementing:
   mov         BYTE [r8 + rcx], al
-  cmp         r10d, 30              ;poprawic na nie magic number
+  cmp         r10d, 30              ;Sprawdzamy, czy obsługujemy permutację T, przed każdą dodawaliśmy 10 do r10
   jg          _checkPermutationT
-  cmp         BYTE [r9 + rax], 0    ;jesli juz wystąpił ten znak, to znaczy, że to ciąg nie jest permutacją
+  cmp         BYTE [r9 + rax], 0    ;Jeżeli juz wystąpił ten znak, to znaczy, że argument nie jest permutacją
   jne         _exit1
   mov         BYTE [r9 + rax], cl
   jmp         _checkAllPermutations
 
 _checkPermutationT:
-  add         cl, 49                ;
-  cmp         BYTE [rdx + rax], cl
+  add         cl, 49
+  cmp         BYTE [rdx + rax], cl  ;Sprawdzamy czy istnieje cykl w permutacji o długości 1 lub 2
   jne         _exit1
   sub         cl, 49
-  cmp         cl, al
+  cmp         cl, al                ;Jeśli cykl był długości 1, zwracamy błąd
   je          _exit1
 
 _checkAllPermutations:
   inc         cl
-  mov         al, BYTE [rdx + rcx]
-  cmp         al, 0
-
-  jne         _checkCharLoop
-  cmp         cl, ALPHABET_SIZE
-  jne         _exit1
+  mov         al, BYTE [rdx + rcx]  ;Sprawdzamy kolejny znak
+  cmp         al, 0                 ;Sprawdzamy, czy to znak końca napisu
+  jne         _checkCharLoop        ;Jeśli nie, to sprawdzamy warunki permutacji ponownie
+  cmp         cl, ALPHABET_SIZE     ;Jeśli to był ostatni znak, to sprawdzamy czy argument był wielkości alfabetu
+  jne         _exit1                ;Jeśli nie to zwracamy błąd
   ret
 
 _exit1:
   mov         rax, SYS_EXIT
   mov         rdi, 1
   syscall
-
-;./dcl 'G=EN9LFW;VBMHA7:ZTY8K@QI6X>OJ2PR?4DSCU1<53' '4O8?T3FBKX7=G96;ZPQUDCJV:>LEY1HRS5@<MNWA2I' 'XSNEG9;J6Z7B>=CPD<?A4Q5KY8HTO3M@FV2LWRU1I:' 'P='
-;9=O4M9YS<:4SJ2NS3BHTWLZOA=A9I?Z6TG>FA@S4YN9=C=4PWW
