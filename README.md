@@ -7,7 +7,9 @@ Napisać w asemblerze program symulujący działanie maszyny szyfrującej DCL. M
 
 Maszyna składa się z trzech bębenków szyfrujących: lewego L, prawego R i odwracającego T. Bębenki L i R mogą się obracać i każdy z nich może znajdować się w jednej z 42 pozycji oznaczanych znakami z dopuszczalnego zbioru. Maszyna zamienia tekst wejściowy na wyjściowy, wykonując dla każdego znaku ciąg permutacji. Jeśli bębenek L jest w pozycji l, a bębenek R w pozycji r, to maszyna wykonuje permutację
 
+```
 Qr-1R-1Qr Ql-1L-1Ql T Ql-1LQl Qr-1RQr
+```
 
 gdzie L, R i T są permutacjami bębenków zadanymi przez parametry programu. Procesy szyfrowania i deszyfrowania są ze sobą zamienne.
 
@@ -19,13 +21,16 @@ Kluczem szyfrowania jest para znaków oznaczająca początkowe pozycje bębenkó
 
 Program przyjmuje cztery parametry: permutację L, permutację R, permutację T, klucz szyfrowania. Program czyta szyfrowany lub deszyfrowany tekst ze standardowego wejścia, a wynik zapisuje na standardowe wyjście. Po przetworzeniu całego wejścia program kończy się kodem 0. Program powinien sprawdzać poprawność parametrów i danych wejściowych, a po wykryciu błędu powinien natychmiast zakończyć się kodem 1. Czytanie i zapisywanie powinno odbywać się w blokach, a nie znak po znaku.
 
+# Ocenianie
+
 Oceniane będą poprawność i szybkość działania programu, zajętość pamięci (rozmiary poszczególnych sekcji), styl kodowania. Tradycyjny styl programowania w asemblerze polega na rozpoczynaniu etykiet od pierwszej kolumny, mnemoników od dziewiątej kolumny, a listy argumentów od siedemnastej kolumny. Inny akceptowalny styl prezentowany jest w przykładach pokazywanych na zajęciach. Kod powinien być dobrze skomentowany, co oznacza między innymi, że każda procedura powinna być opatrzona informacją, co robi, jak przekazywane są do niej parametry, jak przekazywany jest jej wynik, jakie rejestry modyfikuje. To samo dotyczy makr. Komentarza wymagają także wszystkie kluczowe lub nietrywialne linie wewnątrz procedur lub makr. W przypadku asemblera nie jest przesadą komentowania prawie każdej linii kodu, ale należy jak ognia unikać komentarzy typu „zwiększenie wartości rejestru rax o 1”.
 
 Dołączone do zadania przykłady składają się z trójek plików. Plik *.key zawiera parametry wywołania programu, a pliki *.a i *.b zawierają parę tekstów odpowiadających sobie przy szyfrowaniu i deszyfrowaniu.
 
 Jako rozwiązanie należy oddać plik dcl.asm. Program będzie kompilowany poleceniami:
-
+```
 nasm -f elf64 -w+all -w+error -o dcl.o dcl.asm
 
 ld --fatal-warnings -o dcl dcl.o
+```
 
