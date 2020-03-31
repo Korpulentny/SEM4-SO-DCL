@@ -8,7 +8,7 @@ Napisać w asemblerze program symulujący działanie maszyny szyfrującej DCL. M
 Maszyna składa się z trzech bębenków szyfrujących: lewego L, prawego R i odwracającego T. Bębenki L i R mogą się obracać i każdy z nich może znajdować się w jednej z 42 pozycji oznaczanych znakami z dopuszczalnego zbioru. Maszyna zamienia tekst wejściowy na wyjściowy, wykonując dla każdego znaku ciąg permutacji. Jeśli bębenek L jest w pozycji l, a bębenek R w pozycji r, to maszyna wykonuje permutację
 
 ```
-Qr^(-1)R-1Qr Ql-1L-1Ql T Ql-1LQl Qr-1RQr
+Qr-1R-1Qr Ql-1L-1Ql T Ql-1LQl Qr-1RQr
 ```
 
 gdzie L, R i T są permutacjami bębenków zadanymi przez parametry programu. Procesy szyfrowania i deszyfrowania są ze sobą zamienne.
